@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HLS player</title>
+  <style>
+    #video {
+      width: 480px;
+      height: 320px;
+      margin: 12px 0 12px 0;
+    }
+
+    #control {
+      width: 480px;
+      display: grid;
+      grid-template-columns: auto 45px;
+      column-gap: 6px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://yaox023.com/static/eruda.js"></script>
+  <script>eruda.init();</script>
+</head>
+
+<body>
+  <h1>HLS player</h1>
+  <p>
+    First, test if <b>Hls.isSupported()</b> returns true,
+    if it is, then use hls.js to play,
+    if not, try to use video tag directly.
+  </p>
+  <video id="video" controls></video>
+  <br>
+  <div id="control">
+    <input type="text" id="streamURL">
+    <button id="playBtn">play</button>
+  </div>
+
+  <h1>Source Code</h1>
+  <pre id="code"></pre>
+  <script>
+
+    const playBtn = document.getElementById("playBtn");
+    const streamURLInput = document.getElementById("streamURL")
+    const video = document.getElementById("video")
+
+    // if hls.js support true, use it
+    // or try to use video tag directly
+
+    playBtn.onclick = () => {
+      if (Hls.isSupported()) {
+        console.log("hls.js support true")
+
+        const hls = new Hls();
+
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+          console.log("video and hls.js are now bound together !");
+
+          hls.loadSource(streamURLInput.value);
+
+          hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            console.log("manifest loaded, found " + data.levels.length + " quality level");
+
+            video.play()
+          });
+        });
+      } else {
+        console.log("hls.js support false")
+
+        video.src = streamURLInput.value
+        const p = video.play()
+        if (p) {
+          p.then(() => console.log("video play success")).catch(e => console.log("video play fail", e))
+        }
+      }
+    }
+
+    const code = document.getElementById("code")
+    code.innerText = document.body.outerHTML;
+
+  </script>
+</body>
+
+</html>
